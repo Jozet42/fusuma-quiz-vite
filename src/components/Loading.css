@@ -1,0 +1,11 @@
+.loading-screen {
+    height: 100vh;
+    width: 100%;
+    background-color: #2e2b3d;
+    color: #f5e6c8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-family: 'Noto Serif JP', serif;
+}

@@ -15,6 +15,7 @@ const useQuiz = () => {
     const [screenState, setScreenState] = useState('closed');
     const [difficulty, setDifficulty] = useState('normal');
     const [rotationDegree, setRotationDegree] = useState(0);
+    const [isQuizLoading, setIsQuizLoading] = useState(false);
 
     const closeCurtain = () => { setScreenState('closing'); }
     const showChoicesAfterClose = () => { setShowChoices(true); }
@@ -77,42 +78,56 @@ const useQuiz = () => {
     useEffect(() => {
         if (!isStarted || isFinished) return;
 
+        console.log('🌀 クイズローディング開始');
+        setIsQuizLoading(true);
+
         const question = quizSet[currentQuestionIndex];
+        if (!question) return;
+
         const random = Math.floor(Math.random() * question.options.length);
         const answer = question.options[random];
         setCorrectAnswer(answer);
 
-        let maxRotation = 5; // やさしい
-
+        let maxRotation = 5;
         if (difficulty === 'normal') maxRotation = 90;
         if (difficulty === 'hard') maxRotation = 360;
-
-        const randomRotation = Math.floor(Math.random() * maxRotation * 2) - maxRotation; // -X 〜 +X
+        const randomRotation = Math.floor(Math.random() * maxRotation * 2) - maxRotation;
         setRotationDegree(randomRotation);
 
         setAnswer(null);
         setResult('');
         setShowChoices(false);
         setIsAnswered(false);
-
-        // 状態初期化
         setScrollActive(false);
         setScreenState('closed');
 
-        // 襖を開く
+        // 💡このタイミングでローディング終了！
+        setTimeout(() => {
+            setIsQuizLoading(false);
+            console.log('🟢 レイアウト安定 → ローディング解除');
+        }, 100); // 遅延入れとくと安心（0.1秒くらい）
+    }, [currentQuestionIndex, isStarted, isFinished, quizSet, difficulty]);
+
+    useEffect(() => {
+        if (!isStarted || isFinished || isQuizLoading) return;
+
+        console.log('✨ 襖演出スタート');
+
         const openTimer = setTimeout(() => {
-            setScreenState(`opening-${difficulty}`); // ← 襖が開き始める
+            setScreenState(`opening-${difficulty}`);
 
             const openDoneTimer = setTimeout(() => {
-                setScreenState(`open-${difficulty}`);      // ← 襖が開いた状態に遷移
-                setScrollActive(true);       // ← スクロールアニメ開始
-            }, 500); // 襖開く時間に合わせる（1秒想定）
+                setScreenState(`open-${difficulty}`);
+                setScrollActive(true);
+                console.log('✅ 襖オープン完了');
+            }, 500);
 
             return () => clearTimeout(openDoneTimer);
-        }, 300); // スタートから少し遅れて開く（0.3秒）
+        }, 300);
 
         return () => clearTimeout(openTimer);
-    }, [currentQuestionIndex, isStarted, isFinished, quizSet, difficulty, rotationDegree]);
+    }, [isStarted, isFinished, isQuizLoading, difficulty]);
+
 
     return {
         isStarted,
@@ -130,6 +145,7 @@ const useQuiz = () => {
         scrollActive,
         difficulty,
         rotationDegree,
+        isQuizLoading,
         setRotationDegree,
         setDifficulty,
         setScreenState,

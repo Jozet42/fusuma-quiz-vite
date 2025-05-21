@@ -20,7 +20,6 @@ const Quiz = ({
     scrollActive,
     setScreenState,
     setShowChoices,
-    difficulty,
     rotationDegree
 }) => {
     return (
